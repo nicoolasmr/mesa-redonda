@@ -2,8 +2,9 @@ import OpenAI from "openai";
 import { MesaTemplate } from "./ai/templates";
 
 // Initialize OpenAI Client
+// Fallback to empty string to prevent build crashes. Usage will fail if key is missing (as intended).
 const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
+    apiKey: process.env.OPENAI_API_KEY || "dummy-key-for-build",
 });
 
 export const SYSTEM_PROMPTS = {
