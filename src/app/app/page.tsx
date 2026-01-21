@@ -25,6 +25,7 @@ export default async function DashboardPage() {
                 </Card>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                     {workspaces.map((ws: any) => (
                         <Link key={ws.id} href={`/app/workspaces/${ws.id}`}>
                             <Card className="bg-zinc-900 border-zinc-800 hover:border-violet-500 transition-colors cursor-pointer">

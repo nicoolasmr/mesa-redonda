@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Check, ArrowRight, Zap, Target, FileText, Brain, Users, MessagesSquare } from "lucide-react";
+import { Check, ArrowRight, Target, FileText, Users, MessagesSquare } from "lucide-react";
 
 export default function Home() {
   return (
@@ -85,7 +85,7 @@ export default function Home() {
                     <CardTitle className="text-xl text-white">{step.title}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-zinc-400">{step.desc}</p>
+                    <p className="text-zinc-400">&quot;Não consigo decidir qual feature priorizar.&quot;</p>
                   </CardContent>
                 </Card>
               ))}
@@ -104,7 +104,7 @@ export default function Home() {
                 </h3>
                 <Card className="bg-red-950/10 border-red-900/20">
                   <CardContent className="pt-6 space-y-4 text-zinc-400">
-                    <div className="flex gap-3"><span className="text-red-500">—</span> "Vamos marcar um call pra alinhar"</div>
+                    <div className="flex gap-3"><span className="text-red-500">—</span> &quot;Vamos marcar um call pra alinhar&quot;</div>
                     <div className="flex gap-3"><span className="text-red-500">—</span> 2 horas de papo, 0 documentos</div>
                     <div className="flex gap-3"><span className="text-red-500">—</span> ChatGPT genérico que concorda com tudo</div>
                   </CardContent>

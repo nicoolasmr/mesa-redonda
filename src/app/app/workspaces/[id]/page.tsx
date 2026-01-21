@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server"
-import { notFound, redirect } from "next/navigation"
+import { notFound } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import Link from "next/link"
 import { Plus, MessageSquare } from "lucide-react"
 import { createTable } from "@/actions/tables" // We'll need a client wrapper or form action
@@ -49,6 +49,7 @@ export default async function WorkspacePage({ params }: { params: Promise<{ id: 
                     <h2 className="text-xl font-semibold mb-4">Mesas Ativas</h2>
                     {tables && tables.length > 0 ? (
                         <div className="grid gap-4">
+                            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                             {tables.map((table: any) => (
                                 <Link key={table.id} href={`/app/tables/${table.id}`}>
                                     <Card className="bg-zinc-900 border-zinc-800 hover:border-violet-500 transition-colors cursor-pointer">

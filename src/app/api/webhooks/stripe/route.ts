@@ -21,10 +21,11 @@ export async function POST(req: Request) {
             signature,
             process.env.STRIPE_WEBHOOK_SECRET!
         );
-    } catch (err: any) {
+    } catch (err: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
         return new NextResponse(`Webhook Error: ${err.message}`, { status: 400 });
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const session = event.data.object as any;
 
     if (event.type === "checkout.session.completed") {
@@ -48,6 +49,7 @@ export async function POST(req: Request) {
     }
 
     if (event.type === "customer.subscription.updated") {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const subscription = event.data.object as any;
 
         // Find workspace by customer_id
@@ -61,6 +63,7 @@ export async function POST(req: Request) {
     }
 
     if (event.type === "customer.subscription.deleted") {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const subscription = event.data.object as any;
 
         await supabaseAdmin

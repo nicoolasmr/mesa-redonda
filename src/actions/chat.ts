@@ -25,8 +25,8 @@ export async function sendMessage(tableId: string, userContent: string) {
     // Else, reply as Moderator.
 
     let aiResponse = "";
-    let role = "assistant";
-    let persona = "moderator";
+    const role = "assistant";
+    const persona = "moderator";
 
     if (userContent.toUpperCase().includes("PLANO")) {
         aiResponse = "Entendido. Gerando seu plano estratégico base... (Simulação: Artefato criado)";

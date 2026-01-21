@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Home, MessageSquare, CreditCard, Settings, Archive } from "lucide-react"
+import { Home, MessageSquare, CreditCard, Archive } from "lucide-react"
 
 export default function AppLayout({
     children,
