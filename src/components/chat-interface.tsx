@@ -15,6 +15,7 @@ export default function ChatInterface({ tableId, initialMessages, template, arti
     const [messages, setMessages] = useState(initialMessages)
     const [input, setInput] = useState("")
     const [loading, setLoading] = useState(false)
+    const [skepticMode, setSkepticMode] = useState(false)
     const scrollRef = useRef<HTMLDivElement>(null)
     const supabase = createClient()
 
@@ -55,7 +56,7 @@ export default function ChatInterface({ tableId, initialMessages, template, arti
         setLoading(true)
 
         try {
-            await sendMessage(tableId, input)
+            await sendMessage(tableId, input, skepticMode)
         } catch (err) {
             console.error(err)
             // Rollback logic would go here
@@ -114,22 +115,29 @@ export default function ChatInterface({ tableId, initialMessages, template, arti
                 </ScrollArea>
 
                 <div className="p-4 border-t border-zinc-800 bg-zinc-950">
-                    <div className="max-w-3xl mx-auto flex gap-2">
-                        <Input
-                            value={input}
-                            onChange={(e) => setInput(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                            placeholder="Digite sua resposta ou comando (ex: 'Gerar Plano')..."
-                            className="bg-zinc-900 border-zinc-800 focus-visible:ring-violet-600"
-                            disabled={loading}
-                        />
-                        <Button onClick={handleSend} disabled={loading} className="bg-violet-600 hover:bg-violet-700">
-                            <Send className="h-4 w-4" />
-                        </Button>
+                    <div className="flex items-center gap-2 mr-2">
+                        {/* Simple Toggle for Skeptic Mode */}
+                        <button
+                            onClick={() => setSkepticMode(!skepticMode)}
+                            className={`text-xs px-2 py-1 rounded border transition-colors ${skepticMode ? 'bg-red-900/30 border-red-500 text-red-400' : 'bg-zinc-900 border-zinc-800 text-zinc-500'}`}
+                            title="Modo Cético: A IA será mais crítica e focada em riscos."
+                        >
+                            {skepticMode ? "💀 Modo Cético ON" : "🛡️ Modo Cético OFF"}
+                        </button>
                     </div>
+                    <Input
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                        placeholder={skepticMode ? "Pergunte e aguarde a crítica..." : "Digite sua resposta ou comando..."}
+                        className="bg-zinc-900 border-zinc-800 focus-visible:ring-violet-600"
+                        disabled={loading}
+                    />
+                    <Button onClick={handleSend} disabled={loading} className="bg-violet-600 hover:bg-violet-700">
+                        <Send className="h-4 w-4" />
+                    </Button>
                 </div>
             </div>
-
             {/* ARTIFACTS SIDEBAR */}
             <div className="w-80 bg-zinc-950 p-4 border-l border-zinc-800 hidden md:flex flex-col">
                 <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-4">Artefatos</h3>

@@ -40,10 +40,10 @@ export default function Home() {
             ✨ Nova IA de Decisão Estratégica
           </Badge>
           <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-8 bg-gradient-to-b from-white to-zinc-500 bg-clip-text text-transparent pb-2">
-            Decida e saia com um <br className="hidden md:block" /> plano em 15 minutos.
+            Saia de qualquer conversa com <br className="hidden md:block" /> um plano em 15 minutos.
           </h1>
           <p className="text-xl text-zinc-400 max-w-2xl mx-auto mb-10 leading-relaxed">
-            Pare de discutir em círculos. Convoque uma mesa de especialistas virtuais e transforme brainstorms em documentos prontos para execução.
+            Sua diretoria virtual pessoal. Debata com personas especialistas (IA) e gere documentos estratégicos prontos para execução, não apenas chat.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
             <Link href="/app">
@@ -85,7 +85,7 @@ export default function Home() {
                     <CardTitle className="text-xl text-white">{step.title}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-zinc-400">&quot;Não consigo decidir qual feature priorizar.&quot;</p>
+                    <p className="text-zinc-400">&quot;Baseado em Frameworks Reais (RICE, SWOT). Saída estruturada (PDF), não texto solto.&quot;</p>
                   </CardContent>
                 </Card>
               ))}

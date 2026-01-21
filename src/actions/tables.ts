@@ -9,6 +9,20 @@ export async function createTable(workspaceId: string, templateId: string, title
 
     // Verify membership (optional if RLS handles it, but good for UX error)
 
+    // Verify limit
+    const { checkLimit } = await import("@/lib/entitlements");
+    const { data: { user } } = await supabase.auth.getUser();
+
+    // We assume the user creates for their own workspace where they are owner for MVP simplicity.
+    // In a real multi-member workspace, we would check the workspace owner's limit.
+    // Here we check the user's limit directly.
+    if (!user?.id) throw new Error("Usuário não autenticado");
+    const hasLimit = await checkLimit(user.id, "tables");
+
+    if (!hasLimit) {
+        throw new Error("Limite de mesas atingido para seu plano. Faça upgrade.");
+    }
+
     const { data, error } = await supabase
         .from("tables")
         .insert({

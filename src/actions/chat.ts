@@ -3,9 +3,11 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
-// Simple "Stub" for the deterministic engine to start.
-// In a real implementation this would call OpenAI/Anthropic.
-export async function sendMessage(tableId: string, userContent: string) {
+import { callLLM, buildSystemPrompt } from "@/lib/llm";
+import { TEMPLATES } from "@/lib/ai/templates";
+
+// Real implementation calling OpenAI via src/lib/llm.ts
+export async function sendMessage(tableId: string, userContent: string, isSkeptic = false) {
     const supabase = await createClient();
 
     // 1. Save User Message
@@ -17,37 +19,70 @@ export async function sendMessage(tableId: string, userContent: string) {
 
     if (error) throw error;
 
-    // 2. Trigger "Thinking" (Simulation) (We just create the response immediately here)
-    // In V1 this should be a streaming response or background job.
+    // 2. Get Context (Table Info & Template)
+    const { data: table } = await supabase
+        .from("tables")
+        .select("*")
+        .eq("id", tableId)
+        .single();
 
-    // Logic: 
-    // If user says "PLANO", generate artifact.
-    // Else, reply as Moderator.
+    const template = TEMPLATES[table.template_id] || TEMPLATES['product']; // Fallback
 
-    let aiResponse = "";
-    const role = "assistant";
-    const persona = "moderator";
+    // 3. Get Chat History (Last 10 messages for context)
+    const { data: history } = await supabase
+        .from("messages")
+        .select("role, content")
+        .eq("table_id", tableId)
+        .order("created_at", { ascending: false }) // Get latest
+        .limit(10);
 
-    if (userContent.toUpperCase().includes("PLANO")) {
-        aiResponse = "Entendido. Gerando seu plano estratégico base... (Simulação: Artefato criado)";
-        // Create artifact stub
-        await supabase.from("artifacts").insert({
-            table_id: tableId,
-            type: "plan",
-            title: "Plano Estratégico V1",
-            content_json: { status: "draft", sections: ["Objetivo", "Metas", "Ações"] }
-        });
-    } else {
-        aiResponse = `(Simulando IA) Recebi seu input: "${userContent}". \n\nComo moderador, pergunto: Qual o prazo ideal para essa iniciativa?`;
+    // Reverse history to chronological order for LLM
+    const llmHistory = history ? history.reverse().map(m => ({ role: m.role as "user" | "assistant", content: m.content })) : [];
+
+    // 4. Build System Prompt & Call LLM
+    const systemPrompt = buildSystemPrompt(template, isSkeptic);
+
+    // Add instruction to generate artifact if keyword detected (Heuristic trigger)
+    let finalUserMessage = userContent;
+    if (userContent.toUpperCase().includes("PLANO") || userContent.toUpperCase().includes("GERAR")) {
+        finalUserMessage += "\n(SISTEMA: O usuário parece querer um artefato. Se tiver informações suficientes, gere o JSON no campo 'artifact'. Caso contrário, faça perguntas de follow-up.)";
     }
 
-    // 3. Save AI Message
+    const aiResponseRaw = await callLLM([
+        { role: "system", content: systemPrompt },
+        ...llmHistory,
+        { role: "user", content: finalUserMessage }
+    ]);
+
+    // 5. Parse Response
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let aiContent: any = {};
+    try {
+        aiContent = JSON.parse(aiResponseRaw);
+    } catch {
+        aiContent = { text: aiResponseRaw }; // Fallback if not JSON
+    }
+
+    const responseText = aiContent.text || "Estou processando sua solicitação...";
+
+    // 6. Save AI Message
     await supabase.from("messages").insert({
         table_id: tableId,
-        role: role,
-        content: aiResponse,
-        persona_id: persona
+        role: "assistant", // Generic role for the system output
+        content: responseText,
+        persona_id: "moderator" // Default to moderator orchestrating
     });
+
+    // 7. Save Artifact if present
+    if (aiContent.artifact) {
+        await supabase.from("artifacts").insert({
+            table_id: tableId,
+            type: aiContent.artifact.type || "unknown",
+            title: aiContent.artifact.title || "Novo Artefato",
+            content_json: aiContent.artifact,
+            version: 1
+        });
+    }
 
     revalidatePath(`/app/tables/${tableId}`);
 }
