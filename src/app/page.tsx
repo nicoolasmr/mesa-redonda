@@ -18,6 +18,7 @@ export default function Home() {
           <nav className="hidden md:flex gap-6 text-sm font-medium text-zinc-400">
             <Link href="#como-funciona" className="hover:text-white transition-colors">Como Funciona</Link>
             <Link href="#mesas" className="hover:text-white transition-colors">Mesas</Link>
+            <Link href="/blog" className="hover:text-white transition-colors">Blog</Link>
             <Link href="#pricing" className="hover:text-white transition-colors">Preços</Link>
           </nav>
           <div className="flex gap-4">
