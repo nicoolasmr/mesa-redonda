@@ -1,0 +1,2 @@
+-- Add any default seeds here if needed.
+-- Currently, templates are defined in code (deterministic-first), so no DB seeds required for templates yet.
