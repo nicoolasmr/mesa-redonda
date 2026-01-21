@@ -1,65 +1,119 @@
 ---
-title: "Como criar um Roadmap de Produto que funciona (e não é só uma lista de desejos)"
+title: "Roadmap de Produto: O Guia Definitivo (Pare de criar 'Listas de Desejos')"
 date: "2024-03-21"
 cluster: "Product Management"
 ---
 
-Seu roadmap é ignorado pelo time de engenharia e cobrado como promessa pelo time de vendas? Você não está sozinho. A maioria dos PMs cria "wishlists" (listas de desejos) e chama de roadmap.
+Se você perguntar para 10 Product Managers "o que é um roadmap", receberá 12 respostas diferentes. Para vendas, é uma lista de promessas com datas. Para engenharia, é um backlog glorificado. Para a diretoria, é um gráfico bonito no PowerPoint.
 
-Neste guia, vamos transformar sua lista de features em um plano estratégico de verdade.
+E é por isso que a maioria dos times de produto falha.
 
-## O problema da "Wishlist"
-Uma lista de desejos não tem:
-1. **Porquê:** Qual o objetivo de negócio?
-2. **Priorização:** Por que A antes de B?
-3. **Validação:** Temos certeza que isso resolve o problema?
+Eles não estão construindo roadmaps; estão construindo **"Wishlists" (Listas de Desejos)**. E listas de desejos são o caminho mais rápido para construir um "Feature Factory" — uma fábrica de funcionalidades que ninguém usa.
 
-## Passo 1: Defina o Objetivo (Outcome)
-Antes de falar de features (output), fale de resultados (outcome).
-Exemplo: "Aumentar a retenção em 15%" em vez de "Criar Dark Mode".
+Neste guia profundo, vamos desconstruir o conceito de Roadmap Orientado a Resultados (Outcome-based), explicar frameworks avançados como RICE e Kano, e te ensinar a dizer "não" para o CEO sem ser demitido.
 
-## Passo 2: O Framework RICE
-Para priorizar, usamos o RICE:
-*   **Reach (Alcance):** Quantos usuários serão afetados?
-*   **Impact (Impacto):** Qual o efeito no objetivo (0.25 a 3)?
-*   **Confidence (Confiança):** Quão certo você está (50% a 100%)?
-*   **Effort (Esforço):** Semanas/pessoa.
+---
 
-RICE = (R * I * C) / E.
+## Parte 1: O "Output" vs "Outcome" (O Erro Fundamental)
 
-## Passo 3: Monte as Colunas (Now, Next, Later)
-Esqueça datas exatas para coisas daqui a 6 meses. Use horizontes:
-*   **Now:** O que estamos codando agora. (Detalhe alto)
-*   **Next:** O que vem assim que acabarmos. (Discovery feito)
-*   **Later:** Oportunidades futuras. (Ainda nebuloso)
+O erro número 1 é focar no *que* será entregue (o output), e não no *que* será resolvido (o outcome).
 
-## Exemplo Prático
-*   **Objetivo:** Reduzir Churn.
-*   **Feature A:** Onboarding novo. (R=1000, I=2, C=80%, E=4) -> Score: 400.
-*   **Feature B:** Botão Exportar PDF. (R=200, I=0.5, C=100%, E=1) -> Score: 100.
-*   **Decisão:** Fazer o Onboarding primeiro.
+### O Roadmap "Lista de Compras" (Errado)
+*   Janeiro: Dark Mode
+*   Fevereiro: Integração com Salesforce
+*   Março: Novo Dashboard
 
-## Template Copiável
-```markdown
-# Roadmap [Nome do Produto]
+Isso é perigoso porque assume que **sabemos o futuro**. E se o Dark Mode demorar 3 meses? E se ninguém usar a integração com Salesforce? Você se comprometeu com uma entrega, não com um valor.
 
-## Objetivo do Trimestre: [Um KPI claro]
+### O Roadmap Orientado a Resultados (Certo)
+*   **Now (Agora):** Aumentar retenção de usuários enterprise em 15%. (Aposta: Integração Salesforce)
+*   **Next (A seguir):** Reduzir fadiga visual em uso noturno. (Aposta: Dark Mode)
+*   **Later (Futuro):** Melhorar visibilidade de métricas chave. (Aposta: Dashboard)
 
-### Now (Foco Total)
-- [ ] Iniciativa 1 (Dev)
-- [ ] Iniciativa 2 (QA)
+Percebe a diferença? Se descobrirmos que a "Integração Salesforce" não é a melhor forma de reter usuários, podemos mudar a *solução* sem mudar o *compromisso* do roadmap.
 
-### Next (Discovery)
-- [ ] Iniciativa 3 (Validar protótipo)
+> **Regra de Ouro:** Seu roadmap deve comunicar PROBLEMAS a serem resolvidos, não SOLUÇÕES a serem codadas.
 
-### Later (Ideias)
-- [ ] Iniciativa 4
-```
+---
 
-## Como fazer isso em 15 minutos?
-Você pode gastar 4 horas no Excel calculando o RICE, ou pode usar a **Mesa de Produto**.
-1. Entre na Mesa.
-2. Jogue suas features.
-3. A IA (Persona PM Senior) vai calcular o RICE e montar o gráfico Now/Next/Later para você.
+## Parte 2: Priorização Ruthless (Como usar o RICE de verdade)
 
-[Gerar meu Roadmap agora](/app/tables/product)
+Todo mundo conhece o acrônimo RICE. Poucos usam corretamente. Vamos aprofundar.
+
+### R - Reach (Alcance)
+Não chute. Use dados.
+*   *Errado:* "Muita gente vai usar."
+*   *Certo:* "30% da base logada nos últimos 30 dias visitou a página de configurações. Isso dá 1.500 usuários."
+
+### I - Impact (Impacto)
+Qual o efeito no objetivo estratégico? (Use uma escala logarítmica para diferenciar features "legais" de features "game-changers").
+*   3 = Massivo (Muda o negócio)
+*   2 = Alto
+*   1 = Médio
+*   0.5 = Baixo
+*   0.25 = Mínimo
+
+### C - Confidence (Confiança)
+Aqui é onde a mágica acontece. O quanto você tem certeza dos números acima?
+*   100% = Temos dados de uso, pesquisa com usuário e specs de engenharia.
+*   80% = Temos pesquisa qualitativa e estimativa de dev.
+*   50% = "Eu acho que..." (Chute).
+
+> **Dica Pro:** Se sua confiança é < 50%, seu trabalho não é codar, é fazer **Discovery**.
+
+### E - Effort (Esforço)
+Semanas/Pessoa. Seja pessimista. Multiplique a estimativa dos devs por 1.5x.
+
+### A Fórmula:
+`Score = (Reach * Impact * Confidence) / Effort`
+
+---
+
+## Parte 3: O Framework "Now, Next, Later"
+
+Esqueça cronogramas de Gantt para 12 meses. Em tecnologia, 12 meses é uma eternidade. Use horizontes de tempo baseados em **incerteza**.
+
+### 1. Now (Agora) - 1 a 3 meses
+*   **O que é:** O que está sendo desenvolvido ou desenhado *agora*.
+*   **Incerteza:** Baixa (< 10%).
+*   **Compromisso:** Alto. O time está alocado aqui.
+*   **Exemplo:** "Refatoração do Checkout para reduzir latência."
+
+### 2. Next (A seguir) - 3 a 6 meses
+*   **O que é:** A fila de espera. Sabemos o problema, estamos validando a solução.
+*   **Incerteza:** Média (30-40%).
+*   **Compromisso:** Flexível. Pode mudar se o "Now" atrasar ou se o mercado mudar.
+*   **Exemplo:** "Expansão para Latam (Tradução e Moeda)."
+
+### 3. Later (Futuro) - 6+ meses
+*   **O que é:** O "Estacionamento de Ideias" alinhadas com a visão de longo prazo.
+*   **Incerteza:** Alta (> 80%).
+*   **Compromisso:** Zero. É apenas uma intenção de direção.
+*   **Exemplo:** "Uso de IA Generativa para suporte."
+
+---
+
+## Parte 4: A Arte de Dizer "Não" (Stakeholder Management)
+
+O maior inimigo do seu roadmap não é a falta de devs, é o "Feature Creep" vindo de stakeholders.
+
+Quando o CEO pede "aquele botão", não diga "não". Diga:
+*"Isso parece uma ótima ideia. Se fizermos isso agora, teremos que pausar a 'Integração Salesforce' que impacta R$ 500k em retenção. Devemos fazer essa troca?"*
+
+Traga a discussão para o **Trade-off**. Mostre o custo de oportunidade.
+
+---
+
+## Parte 5: Como automatizar a estratégia com a Mesa Redonda
+
+Você pode passar 2 dias no Excel tentando calibrar seus scores RICE e brigando com stakeholders, ou pode usar a IA para ser o "bad cop".
+
+A **Mesa de Produto** da Mesa Redonda foi treinada com as personas de PMs Seniors do Vale do Silício.
+
+1.  **Dê o Input Desestruturado:** "Temos que fazer X, Y e Z, mas o time de vendas quer W."
+2.  **O Debate:** A persona "O Cético" vai questionar a confiança dos seus dados ("Você tem certeza que o Reach é 1000?"). A persona "O Estrategista" vai alinhar com o OKR.
+3.  **O Artefato:** Em 2 minutos, você recebe uma tabela RICE calculada e uma sugestão de roadmap "Now/Next/Later" justificada, pronta para apresentar.
+
+Pare de gastar tempo formatando slides. Gaste tempo resolvendo problemas.
+
+[Gerar meu Roadmap Estratégico agora →](/app/tables/product)
