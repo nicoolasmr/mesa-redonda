@@ -175,6 +175,8 @@ CREATE POLICY "Members can update workspace intents" ON user_intents
 -- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 -- Auto-update timestamp for templates
+DROP TRIGGER IF EXISTS trigger_update_template_timestamp ON table_templates;
+
 CREATE OR REPLACE FUNCTION update_template_timestamp()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -189,6 +191,8 @@ FOR EACH ROW
 EXECUTE FUNCTION update_template_timestamp();
 
 -- Auto-update timestamp for user_intents
+DROP TRIGGER IF EXISTS trigger_update_user_intent_timestamp ON user_intents;
+
 CREATE OR REPLACE FUNCTION update_user_intent_timestamp()
 RETURNS TRIGGER AS $$
 BEGIN
