@@ -1,11 +1,20 @@
 import fs from "fs"
 import path from "path"
 
-type Post = {
+export type BlogCategory =
+    | "produto-estrategia"
+    | "marketing-growth"
+    | "vendas-revenue"
+    | "carreira-lideranca"
+    | "produtividade-execucao"
+
+export type Post = {
     slug: string
     title: string
     date: string
     content: string
+    category?: BlogCategory
+    excerpt?: string
 }
 
 const postsDirectory = path.join(process.cwd(), "content/blog")
@@ -22,11 +31,15 @@ export function getPosts(): Post[] {
         // Simple frontmatter parsing (Manual regex to avoid dependencies)
         const titleMatch = fileContents.match(/title:\s*"(.*?)"/)
         const dateMatch = fileContents.match(/date:\s*"(.*?)"/)
+        const categoryMatch = fileContents.match(/category:\s*"(.*?)"/)
+        const excerptMatch = fileContents.match(/excerpt:\s*"(.*?)"/)
 
         return {
             slug,
             title: titleMatch ? titleMatch[1] : slug,
             date: dateMatch ? dateMatch[1] : "",
+            category: categoryMatch ? categoryMatch[1] as BlogCategory : undefined,
+            excerpt: excerptMatch ? excerptMatch[1] : undefined,
             content: fileContents.replace(/---[\s\S]*?---/, "").trim(), // Strip frontmatter
         }
     })

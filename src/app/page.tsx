@@ -4,6 +4,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Check, ArrowRight, Target, FileText, Users, MessagesSquare } from "lucide-react";
+import { LandingDemo } from "@/components/landing-demo";
 
 export default function Home() {
   return (
@@ -25,7 +26,7 @@ export default function Home() {
             <Link href="/login">
               <Button variant="ghost" className="text-zinc-400 hover:text-white hover:bg-white/5">Entrar</Button>
             </Link>
-            <Link href="/app">
+            <Link href="/login">
               <Button className="bg-violet-600 hover:bg-violet-700 text-white border-0 shadow-[0_0_20px_-5px_rgba(124,58,237,0.5)]">
                 Começar Grátis
               </Button>
@@ -47,9 +48,9 @@ export default function Home() {
             Sua diretoria virtual pessoal. Debata com personas especialistas (IA) e gere documentos estratégicos prontos para execução, não apenas chat.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
-            <Link href="/app">
+            <Link href="/login">
               <Button size="lg" className="h-14 px-8 text-lg bg-white text-black hover:bg-zinc-200 rounded-full font-semibold">
-                Criar Minha Mesa Agota
+                Criar Minha Mesa Agora
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
@@ -67,6 +68,9 @@ export default function Home() {
             </div>
           </div>
         </section>
+
+        {/* DEMO INTERATIVO */}
+        <LandingDemo />
 
         {/* COMO FUNCIONA */}
         <section id="como-funciona" className="py-24 border-t border-white/5 bg-zinc-950/50">
