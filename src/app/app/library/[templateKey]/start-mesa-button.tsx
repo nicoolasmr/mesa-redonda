@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { UpgradeModal } from "./upgrade-modal-wrapper"
+import { UpgradeModal } from "@/components/upgrade-modal"
 import { Button } from "@/components/ui/button"
 import { ArrowRight } from "lucide-react"
 

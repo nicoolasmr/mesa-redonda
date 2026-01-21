@@ -62,6 +62,10 @@ export default async function TemplateDetailPage({ params }: PageProps) {
     async function startMesa() {
         'use server'
 
+        if (!template) {
+            redirect('/app/library')
+        }
+
         // Double-check access server-side
         const supabase = await createClient()
         const { data: ws } = await supabase
@@ -231,14 +235,7 @@ export default async function TemplateDetailPage({ params }: PageProps) {
                     isHighRisk={isHighRisk}
                     startMesaAction={startMesa}
                 />
-
-                {isHighRisk && (
-                    <p className="text-xs text-zinc-500 text-center mt-4">
-                        Ao iniciar, você confirma que entende que este conteúdo é informativo e não substitui profissional qualificado.
-                    </p>
-                )}
             </div>
         </div>
     )
 }
-```
