@@ -6,19 +6,20 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { createClient } from "@/lib/supabase/client"
-import { useState } from "react"
-import { Loader2, AlertCircle } from "lucide-react"
+import { useState, Suspense } from "react"
+import { Loader2, AlertCircle, Eye, EyeOff } from "lucide-react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 
-export default function LoginPage() {
-    const [loading, setLoading] = useState(false)
-    const [message, setMessage] = useState("")
-    const [error, setError] = useState("")
+function LoginForm() {
     const supabase = createClient()
     const router = useRouter()
     const searchParams = useSearchParams()
     const next = searchParams.get("next") || "/app"
+
+    const [loading, setLoading] = useState(false)
+    const [message, setMessage] = useState("")
+    const [error, setError] = useState("")
 
     // Login state
     const [loginEmail, setLoginEmail] = useState("")
@@ -224,5 +225,17 @@ export default function LoginPage() {
                 </CardContent>
             </Card>
         </div>
+    )
+}
+
+export default function LoginPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-black flex items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-violet-600" />
+            </div>
+        }>
+            <LoginForm />
+        </Suspense>
     )
 }

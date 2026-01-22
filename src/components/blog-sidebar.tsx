@@ -1,7 +1,8 @@
 "use client"
 
-import { BlogCategory } from "@/lib/blog"
 import { cn } from "@/lib/utils"
+
+type BlogCategory = "produto-estrategia" | "marketing-growth" | "vendas-revenue" | "carreira-lideranca" | "produtividade-execucao"
 
 type BlogSidebarProps = {
     selectedCategory: BlogCategory | "all"

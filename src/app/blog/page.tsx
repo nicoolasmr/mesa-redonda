@@ -1,19 +1,34 @@
 "use client"
 
-import { getPosts, BlogCategory } from "@/lib/blog"
+import { useState, useEffect, useMemo } from "react"
 import Link from "next/link"
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { BlogSidebar } from "@/components/blog-sidebar"
-import { useState, useMemo } from "react"
+
+type BlogCategory = "produto-estrategia" | "marketing-growth" | "vendas-revenue" | "carreira-lideranca" | "produtividade-execucao"
+
+type Post = {
+    slug: string
+    title: string
+    date: string
+    category?: string
+    excerpt?: string
+}
 
 export default function BlogIndex() {
+    const [posts, setPosts] = useState<Post[]>([])
     const [selectedCategory, setSelectedCategory] = useState<BlogCategory | "all">("all")
-    const allPosts = getPosts()
+
+    useEffect(() => {
+        fetch('/api/blog/posts')
+            .then(res => res.json())
+            .then(data => setPosts(data))
+    }, [])
 
     const filteredPosts = useMemo(() => {
-        if (selectedCategory === "all") return allPosts
-        return allPosts.filter(post => post.category === selectedCategory)
-    }, [allPosts, selectedCategory])
+        if (selectedCategory === "all") return posts
+        return posts.filter(post => post.category === selectedCategory)
+    }, [posts, selectedCategory])
 
     return (
         <div className="bg-black min-h-screen text-white pt-24 pb-12">

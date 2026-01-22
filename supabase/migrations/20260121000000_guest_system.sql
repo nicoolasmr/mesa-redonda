@@ -57,13 +57,16 @@ COMMENT ON COLUMN guest_artifacts.table_type IS 'Type of mesa: marketing, produt
 COMMENT ON COLUMN guest_artifacts.result_json IS 'Structured artifact JSON (deterministic-first)';
 
 -- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
--- 3. AUTO-UPDATE TIMESTAMP TRIGGER
+-- TRIGGERS
 -- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+-- Auto-update last_seen_at on guest_credits
+DROP TRIGGER IF EXISTS trigger_update_guest_credits_timestamp ON guest_credits;
 
 CREATE OR REPLACE FUNCTION update_guest_credits_timestamp()
 RETURNS TRIGGER AS $$
 BEGIN
-    NEW.updated_at = NOW();
+    NEW.last_seen_at = NOW();
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -74,7 +77,7 @@ FOR EACH ROW
 EXECUTE FUNCTION update_guest_credits_timestamp();
 
 -- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
--- 4. RLS POLICIES (SECURITY)
+-- RLS POLICIES (SECURITY)
 -- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 -- Guest tables are NOT accessible from client
 -- All access must go through server-side API routes with service role
