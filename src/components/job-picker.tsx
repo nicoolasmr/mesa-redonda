@@ -3,16 +3,22 @@
 import { Job } from "@/actions/library"
 import { Card, CardContent } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
+import { useRouter } from "next/navigation"
 
 type JobPickerProps = {
     jobs: Job[]
     selectedJobId?: string | null
-    onJobSelect: (job: Job) => void
 }
 
-export function JobPicker({ jobs, selectedJobId, onJobSelect }: JobPickerProps) {
+export function JobPicker({ jobs, selectedJobId }: JobPickerProps) {
+    const router = useRouter()
+
     // Show only top 3 jobs for progressive disclosure
     const topJobs = jobs.slice(0, 3)
+
+    function handleSelect(job: Job) {
+        router.push(`/app/library?job=${job.key}`)
+    }
 
     return (
         <div className="space-y-4">
@@ -35,7 +41,7 @@ export function JobPicker({ jobs, selectedJobId, onJobSelect }: JobPickerProps) 
                                 ? "bg-gradient-to-br from-violet-900/50 to-purple-900/50 border-violet-500"
                                 : "bg-zinc-900 border-zinc-800 hover:border-zinc-700"
                         )}
-                        onClick={() => onJobSelect(job)}
+                        onClick={() => handleSelect(job)}
                     >
                         <CardContent className="p-6 text-center">
                             <div className="text-4xl mb-3">{job.icon || "🎯"}</div>

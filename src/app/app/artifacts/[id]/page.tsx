@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server"
 import { notFound } from "next/navigation"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { ArtifactActions } from "@/components/artifact-actions"
 
 export default async function ArtifactPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
@@ -24,9 +25,12 @@ export default async function ArtifactPage({ params }: { params: Promise<{ id: s
                             <Badge variant="outline" className="mb-2">{artifact.type.toUpperCase()}</Badge>
                             <CardTitle className="text-3xl font-bold">{artifact.title}</CardTitle>
                         </div>
-                        <div className="text-right text-sm text-zinc-500">
-                            <p>Versão {artifact.version}</p>
-                            <p>{new Date(artifact.created_at).toLocaleDateString()}</p>
+                        <div className="flex flex-col items-end gap-4">
+                            <div className="text-right text-sm text-zinc-500">
+                                <p>Versão {artifact.version}</p>
+                                <p>{new Date(artifact.created_at).toLocaleDateString()}</p>
+                            </div>
+                            <ArtifactActions artifactTitle={artifact.title} content={artifact.content_json} />
                         </div>
                     </div>
                 </CardHeader>

@@ -1,6 +1,13 @@
 'use server'
 
 import { createClient } from "@/lib/supabase/server"
+import { z } from "zod";
+import { logger } from "@/lib/logger";
+
+const SaveUserIntentSchema = z.object({
+    workspaceId: z.string().uuid(),
+    payload: z.any(), // Keeping it flexible but could be more specific
+});
 
 export type Category = {
     id: string
@@ -60,7 +67,7 @@ export async function getJobs(): Promise<Job[]> {
         .order('order_index', { ascending: true })
 
     if (error) {
-        console.error('Error fetching jobs:', error)
+        logger.error('Error fetching jobs', error)
         return []
     }
 
@@ -79,7 +86,7 @@ export async function getCategories(): Promise<Category[]> {
         .order('order_index', { ascending: true })
 
     if (error) {
-        console.error('Error fetching categories:', error)
+        logger.error('Error fetching categories', error)
         return []
     }
 
@@ -132,7 +139,7 @@ export async function listTemplates(filters?: {
         .order('name', { ascending: true })
 
     if (error) {
-        console.error('Error fetching templates:', error)
+        logger.error('Error fetching templates', error)
         return []
     }
 
@@ -157,7 +164,7 @@ export async function getTemplate(templateKey: string): Promise<Template | null>
         .single()
 
     if (error) {
-        console.error('Error fetching template:', error)
+        logger.error('Error fetching template', error, { templateKey })
         return null
     }
 
@@ -219,7 +226,7 @@ export async function recommendTemplates(
         .limit(limit)
 
     if (error) {
-        console.error('Error recommending templates:', error)
+        logger.error('Error recommending templates', error, { workspaceId })
         return []
     }
 
@@ -233,18 +240,21 @@ export async function saveUserIntent(
     workspaceId: string,
     payload: Partial<UserIntent>
 ): Promise<void> {
+    // Validate Input
+    const validated = SaveUserIntentSchema.parse({ workspaceId, payload });
+
     const supabase = await createClient()
 
     const { error } = await supabase
         .from('user_intents')
         .upsert({
-            workspace_id: workspaceId,
-            ...payload,
+            workspace_id: validated.workspaceId,
+            ...validated.payload,
             updated_at: new Date().toISOString()
         })
 
     if (error) {
-        console.error('Error saving user intent:', error)
+        logger.error('Error saving user intent', error, { workspaceId: validated.workspaceId });
         throw new Error('Failed to save user intent')
     }
 }

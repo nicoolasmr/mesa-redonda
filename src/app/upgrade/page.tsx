@@ -2,66 +2,71 @@ import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Check, Lock, Zap } from "lucide-react"
+import { Check, Lock, Zap, ArrowRight } from "lucide-react"
 import Link from "next/link"
+import { createCheckoutSession } from "@/actions/stripe"
 
 export default async function UpgradePage() {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
-        redirect("/login?next=/app/upgrade")
+        redirect("/login?next=/upgrade")
     }
 
-    // Check if user already has subscription
-    // TODO: Implement subscription check via Stripe
-    // For now, show upgrade page
+    // Get workspace to check current plan
+    const { data: workspaces } = await supabase
+        .from('workspaces')
+        .select('subscription_plan')
+        .eq('owner_id', user.id)
+        .limit(1)
+
+    const currentPlan = (workspaces && workspaces.length > 0) ? workspaces[0].subscription_plan : 'free'
 
     const plans = [
         {
+            id: 'starter',
             name: "Starter",
-            price: "R$ 49",
+            price: "R$ 79",
             period: "/mês",
+            priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_STARTER || '',
             description: "Para profissionais que querem decisões melhores",
             features: [
-                "10 mesas por mês",
-                "Todas as personas (Cético, Criativo, Analítico)",
-                "Exportar artefatos em PDF",
-                "Histórico de 30 dias",
+                "10 Mesas/mês",
+                "Modelos padrão",
+                "Exportação PDF",
             ],
-            cta: "Começar Agora",
+            cta: "COMEÇAR AGORA",
             highlighted: false,
         },
         {
-            name: "Pro",
-            price: "R$ 99",
+            id: 'pro',
+            name: "Pro (Founder)",
+            price: "R$ 129",
             period: "/mês",
+            priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO || '',
             description: "Para times que precisam de agilidade estratégica",
             features: [
-                "Mesas ilimitadas",
-                "Modo Cético avançado",
-                "Workspaces colaborativos",
-                "Histórico ilimitado",
-                "Suporte prioritário",
-                "Integrações (Notion, Slack)",
+                "Mesas Ilimitadas",
+                "Modelos Smart (GPT-4o)",
+                "Memória Editável (The Brain)",
             ],
-            cta: "Upgrade para Pro",
+            cta: "COMEÇAR AGORA",
             highlighted: true,
         },
         {
+            id: 'team',
             name: "Team",
-            price: "R$ 299",
+            price: "R$ 197",
             period: "/mês",
+            priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_TEAM || '',
             description: "Para empresas que tomam decisões em escala",
             features: [
                 "Tudo do Pro",
-                "Até 10 membros",
-                "SSO (Single Sign-On)",
-                "Admin dashboard",
-                "SLA de suporte",
-                "Onboarding dedicado",
+                "3 Membros inclusos",
+                "Workspace Compartilhado",
             ],
-            cta: "Falar com Vendas",
+            cta: "COMEÇAR AGORA",
             highlighted: false,
         },
     ]
@@ -71,36 +76,30 @@ export default async function UpgradePage() {
             <div className="container mx-auto max-w-6xl">
                 {/* Header */}
                 <div className="text-center mb-12">
-                    <div className="inline-flex items-center gap-2 bg-violet-600/10 border border-violet-500/30 rounded-full px-4 py-2 mb-6">
-                        <Lock className="h-4 w-4 text-violet-400" />
-                        <span className="text-sm text-violet-300">Upgrade Necessário</span>
-                    </div>
-                    <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-white to-zinc-400 bg-clip-text text-transparent">
-                        Continue Tomando Decisões Melhores
+                    <h1 className="text-4xl font-bold mb-4">
+                        Escolha o Plano Ideal
                     </h1>
                     <p className="text-xl text-zinc-400 max-w-2xl mx-auto">
-                        Escolha o plano ideal para você ou seu time e desbloqueie todo o potencial da Mesa Redonda.
+                        Upgrade, downgrade ou cancele a qualquer momento. Sem taxas.
                     </p>
                 </div>
 
-                {/* Pricing Cards */}
-                <div className="grid md:grid-cols-3 gap-6 mb-12">
+                {/* Plans Grid */}
+                <div className="grid md:grid-cols-3 gap-8 mb-12">
                     {plans.map((plan) => (
                         <Card
-                            key={plan.name}
-                            className={`relative ${plan.highlighted
-                                    ? "bg-gradient-to-br from-violet-900/30 to-purple-900/30 border-violet-500"
-                                    : "bg-zinc-900 border-zinc-800"
+                            key={plan.id}
+                            className={`relative flex flex-col ${plan.highlighted
+                                ? "bg-gradient-to-br from-violet-900/30 to-purple-900/30 border-violet-500/50 shadow-2xl shadow-violet-900/20"
+                                : "bg-zinc-900 border-zinc-800"
                                 }`}
                         >
                             {plan.highlighted && (
-                                <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                                    <div className="bg-violet-600 text-white text-xs font-bold px-4 py-1 rounded-full flex items-center gap-1">
-                                        <Zap className="h-3 w-3" />
-                                        MAIS POPULAR
-                                    </div>
+                                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-violet-600 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+                                    Mais Popular
                                 </div>
                             )}
+
                             <CardHeader>
                                 <CardTitle className="text-2xl text-white">{plan.name}</CardTitle>
                                 <CardDescription className="text-zinc-400">
@@ -111,56 +110,74 @@ export default async function UpgradePage() {
                                     <span className="text-zinc-500">{plan.period}</span>
                                 </div>
                             </CardHeader>
-                            <CardContent>
-                                <ul className="space-y-3 mb-6">
-                                    {plan.features.map((feature, idx) => (
-                                        <li key={idx} className="flex items-start gap-2 text-sm">
-                                            <Check className="h-5 w-5 text-green-400 flex-shrink-0" />
-                                            <span className="text-zinc-300">{feature}</span>
+
+                            <CardContent className="flex-1 flex flex-col">
+                                <ul className="space-y-3 mb-6 flex-1">
+                                    {plan.features.map((feature, i) => (
+                                        <li key={i} className="flex items-start gap-2 text-zinc-300">
+                                            <Check className={`h-5 w-5 mt-0.5 flex-shrink-0 ${plan.highlighted ? 'text-violet-400' : 'text-zinc-500'
+                                                }`} />
+                                            <span>{feature}</span>
                                         </li>
                                     ))}
                                 </ul>
-                                <Button
-                                    className={`w-full ${plan.highlighted
-                                            ? "bg-violet-600 hover:bg-violet-700"
-                                            : "bg-zinc-800 hover:bg-zinc-700"
-                                        }`}
-                                >
-                                    {plan.cta}
-                                </Button>
+
+                                <form action={createCheckoutSession.bind(null, plan.priceId)}>
+                                    <Button
+                                        type="submit"
+                                        className={`w-full ${plan.highlighted
+                                            ? "bg-violet-600 hover:bg-violet-700 text-white"
+                                            : "bg-zinc-800 hover:bg-zinc-700 text-white"
+                                            }`}
+                                        disabled={currentPlan === plan.id}
+                                    >
+                                        {currentPlan === plan.id ? (
+                                            <>
+                                                <Check className="mr-2 h-4 w-4" />
+                                                Plano Atual
+                                            </>
+                                        ) : (
+                                            <>
+                                                {plan.cta}
+                                                <ArrowRight className="ml-2 h-4 w-4" />
+                                            </>
+                                        )}
+                                    </Button>
+                                </form>
                             </CardContent>
                         </Card>
                     ))}
                 </div>
 
-                {/* FAQ / Benefits */}
-                <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-8 text-center">
-                    <h3 className="text-xl font-semibold text-white mb-4">
-                        Por que assinar a Mesa Redonda?
-                    </h3>
-                    <div className="grid md:grid-cols-3 gap-6 text-sm text-zinc-400">
-                        <div>
-                            <div className="text-3xl mb-2">⚡</div>
-                            <p className="font-semibold text-white mb-1">Decisões em 15 min</p>
-                            <p>Não perca mais tempo em reuniões improdutivas</p>
+                {/* FAQ */}
+                <div className="max-w-3xl mx-auto">
+                    <h2 className="text-2xl font-bold mb-6 text-center">Perguntas Frequentes</h2>
+                    <div className="space-y-4">
+                        <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6">
+                            <h3 className="font-semibold text-white mb-2">Posso cancelar a qualquer momento?</h3>
+                            <p className="text-zinc-400">
+                                Sim. Sem taxas de cancelamento. Cancele direto no app.
+                            </p>
                         </div>
-                        <div>
-                            <div className="text-3xl mb-2">🎯</div>
-                            <p className="font-semibold text-white mb-1">Artefatos prontos</p>
-                            <p>PDFs, checklists e docs para executar imediatamente</p>
+                        <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6">
+                            <h3 className="font-semibold text-white mb-2">Como funciona o upgrade/downgrade?</h3>
+                            <p className="text-zinc-400">
+                                Você pode mudar de plano a qualquer momento. O valor é ajustado proporcionalmente.
+                            </p>
                         </div>
-                        <div>
-                            <div className="text-3xl mb-2">🧠</div>
-                            <p className="font-semibold text-white mb-1">IA determinística</p>
-                            <p>Baseado em frameworks reais, não respostas genéricas</p>
+                        <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6">
+                            <h3 className="font-semibold text-white mb-2">Meus dados estão seguros?</h3>
+                            <p className="text-zinc-400">
+                                Sim. Usamos criptografia end-to-end. Seus dados não são usados para treinar modelos.
+                            </p>
                         </div>
                     </div>
                 </div>
 
-                {/* Back Link */}
-                <div className="mt-8 text-center">
-                    <Link href="/app" className="text-sm text-zinc-400 hover:text-white">
-                        ← Voltar para o app
+                {/* Back to App */}
+                <div className="text-center mt-12">
+                    <Link href="/app" className="text-zinc-400 hover:text-white transition-colors">
+                        ← Voltar para o App
                     </Link>
                 </div>
             </div>

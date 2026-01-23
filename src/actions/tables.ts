@@ -2,40 +2,49 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { ensureMember } from "@/lib/auth-utils";
+import { z } from "zod";
+import { logger } from "@/lib/logger";
 
+const CreateTableSchema = z.object({
+    workspaceId: z.string().uuid(),
+    templateId: z.string().uuid(),
+    title: z.string().min(1).max(255),
+});
 
 export async function createTable(workspaceId: string, templateId: string, title: string) {
+    // Validate Input
+    const validated = CreateTableSchema.parse({ workspaceId, templateId, title });
+
     const supabase = await createClient();
 
-    // Verify membership (optional if RLS handles it, but good for UX error)
+    // Verify membership (Defense in Depth)
+    await ensureMember(supabase, validated.workspaceId);
 
-    // Verify limit
-    const { checkLimit } = await import("@/lib/entitlements");
+    // Verify limit using professional entitlement helper
+    const { canPerformAction, trackUsage } = await import("@/lib/entitlements");
     const { data: { user } } = await supabase.auth.getUser();
 
-    // We assume the user creates for their own workspace where they are owner for MVP simplicity.
-    // In a real multi-member workspace, we would check the workspace owner's limit.
-    // Here we check the user's limit directly.
     if (!user?.id) throw new Error("Usuário não autenticado");
-    const hasLimit = await checkLimit(user.id, "tables");
 
+    const hasLimit = await canPerformAction(validated.workspaceId, "runs");
     if (!hasLimit) {
-        throw new Error("Limite de mesas atingido para seu plano. Faça upgrade.");
+        throw new Error("Limite de mesas atingido para seu plano. Faça upgrade para continuar.");
     }
 
     const { data, error } = await supabase
         .from("tables")
         .insert({
-            workspace_id: workspaceId,
-            template_id: templateId,
-            title: title,
+            workspace_id: validated.workspaceId,
+            template_id: validated.templateId,
+            title: validated.title,
             status: "active"
         })
         .select()
         .single();
 
     if (error) {
-        console.error("Error creating table:", error);
+        logger.error("Failed to create table", error, { workspaceId: validated.workspaceId, title: validated.title });
         throw new Error("Failed to create table");
     }
 
@@ -46,7 +55,18 @@ export async function createTable(workspaceId: string, templateId: string, title
         content: "Mesa iniciada. Aguardando contexto do usuário."
     });
 
-    revalidatePath(`/app/workspaces/${workspaceId}`);
+    // Track usage
+    await trackUsage(validated.workspaceId, "runs");
+
+    // Telemetry
+    await supabase.from('events').insert({
+        event_name: 'table_created',
+        workspace_id: validated.workspaceId,
+        user_id: user.id,
+        payload: { template_id: validated.templateId }
+    });
+
+    revalidatePath(`/app/workspaces/${validated.workspaceId}`);
     return data.id;
 }
 
@@ -70,4 +90,24 @@ export async function getMessages(tableId: string) {
         .order("created_at", { ascending: true });
 
     return data || [];
+}
+
+export async function listTables(workspaceId: string) {
+    const supabase = await createClient();
+
+    // Verify membership
+    await ensureMember(supabase, workspaceId);
+
+    const { data, error } = await supabase
+        .from("tables")
+        .select("*, table_templates(name)")
+        .eq("workspace_id", workspaceId)
+        .order("created_at", { ascending: false });
+
+    if (error) {
+        logger.error("Failed to list tables", error, { workspaceId });
+        return [];
+    }
+
+    return data;
 }

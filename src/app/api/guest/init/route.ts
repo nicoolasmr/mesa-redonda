@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getServiceRoleClient, GUEST_COOKIE_NAME, GUEST_COOKIE_MAX_AGE } from "@/lib/guest"
 import { randomUUID } from "crypto"
+import { logger } from "@/lib/logger"
 
 /**
  * POST /api/guest/init
@@ -10,8 +11,10 @@ export async function POST(req: NextRequest) {
     try {
         const supabase = getServiceRoleClient()
 
-        // Check if guest_id cookie exists
-        const existingGuestId = req.cookies.get(GUEST_COOKIE_NAME)?.value
+        // Check if guest_id cookie exists or header
+        const cookieGuestId = req.cookies.get(GUEST_COOKIE_NAME)?.value
+        const headerGuestId = req.headers.get("x-guest-id")
+        const existingGuestId = cookieGuestId || headerGuestId
 
         if (existingGuestId) {
             // Fetch existing credits
@@ -46,7 +49,7 @@ export async function POST(req: NextRequest) {
             })
 
         if (insertError) {
-            console.error("Error creating guest:", insertError)
+            logger.error("Error creating guest", insertError)
             return NextResponse.json(
                 { error: "Failed to initialize guest session" },
                 { status: 500 }
@@ -69,7 +72,7 @@ export async function POST(req: NextRequest) {
 
         return response
     } catch (error) {
-        console.error("Guest init error:", error)
+        logger.error("Guest init error", error)
         return NextResponse.json(
             { error: "Internal server error" },
             { status: 500 }

@@ -15,7 +15,13 @@ function LoginForm() {
     const supabase = createClient()
     const router = useRouter()
     const searchParams = useSearchParams()
-    const next = searchParams.get("next") || "/app"
+    const plan = searchParams.get("plan")
+
+    // Construct next URL preserving params
+    let next = searchParams.get("next") || "/app"
+    if (plan && !next.includes("plan=")) {
+        next += (next.includes('?') ? '&' : '?') + `plan=${plan}`
+    }
 
     const [loading, setLoading] = useState(false)
     const [message, setMessage] = useState("")

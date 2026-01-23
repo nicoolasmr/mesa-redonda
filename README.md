@@ -1,271 +1,239 @@
-# Mesa Redonda
+# Mesa Redonda v1.4 🎯
 
-**Decisões estratégicas em 15 minutos** — Debata com especialistas de IA e saia com artefatos prontos para executar.
+**Sua diretoria virtual pessoal.** Debata com personas especialistas de IA e gere documentos estratégicos prontos para execução.
 
-![Mesa Redonda](https://img.shields.io/badge/version-1.3.0-violet) ![License](https://img.shields.io/badge/license-MIT-green)
+## 🚀 O que há de novo na v1.4
 
----
+### ✅ Bugs Críticos Resolvidos
+- **JobPicker Navigation**: Navegação fluida de JTBD para biblioteca filtrada
+- **Library Filtering**: Filtros por objetivo funcionando perfeitamente
 
-## 🎯 O Que É
+### 📰 Blog Experience Premium
+- **MDX Rendering**: Checkboxes, tables, code blocks renderizados corretamente
+- **3-Column Layout**: TOC + Article + Related Articles
+- **Reading Progress Bar**: Barra de progresso no topo
+- **Table of Contents**: Com scroll spy e navegação suave
+- **Share Buttons**: Twitter, LinkedIn, Copy link
+- **Related Articles**: Sugestões por categoria
 
-Mesa Redonda é uma plataforma de **decisões estratégicas assistidas por IA** que transforma conversas em artefatos executáveis.
-
-Ao invés de passar horas em reuniões improdutivas ou receber respostas genéricas de ChatGPT, você:
-1. **Escolhe uma mesa** (Plano de Marketing, Roadmap de Produto, PDI, etc.)
-2. **Debate com especialistas** (Cético, Criativo, Analítico)
-3. **Recebe artefatos prontos** (PDFs, checklists, planos estruturados)
-
----
-
-## ✨ Features
-
-### v1.3 - Biblioteca de Mesas
-- ✅ **30 templates curados** organizados por JTBD (Jobs to Be Done)
-- ✅ **Progressive disclosure**: Home JTBD → Biblioteca → Template detail
-- ✅ **Recommendation engine** determinístico baseado em job/stage/plan
-- ✅ **Guardrails legais**: Templates high-risk (legal/finance) com disclaimers
-- ✅ **Gating por plano**: Free (3 mesas basic) → Pro (ilimitado + advanced + high-risk)
-
-### v1.2 - Demo + Auth + Paywall
-- ✅ **Guest demo system**: 5 créditos gratuitos para testar
-- ✅ **Auth email+password**: Substituiu magic link
-- ✅ **Paywall**: Página de upgrade com 3 planos
-
-### v1.1 - PMF & Scale
-- ✅ **LLM integration**: OpenAI GPT-4 com prompts estruturados
-- ✅ **Modo Cético**: Toggle para ativar persona crítica
-- ✅ **Entitlements**: Limites por plano (free/starter/pro/max)
-- ✅ **Blog**: 12+ artigos profundos sobre estratégia e produto
+### 💳 Stripe Integration Completa
+- **Checkout Flow**: Integração completa com Stripe Checkout
+- **Webhook Handling**: Atualização automática de planos via webhooks
+- **Customer Portal**: Gerenciamento de assinatura pelo usuário
+- **3 Planos**: Starter (R$ 49), Pro (R$ 99), Team (R$ 299)
 
 ---
 
-## 🚀 Quick Start
+## 🛠️ Tech Stack
 
-### Prerequisites
-- Node.js 18+
-- Supabase account
-- OpenAI API key (opcional para demo)
+- **Framework**: Next.js 16 (App Router)
+- **Database**: Supabase (PostgreSQL)
+- **Auth**: Supabase Auth
+- **Payments**: Stripe
+- **AI**: OpenAI GPT-4o-mini
+- **Styling**: Tailwind CSS + shadcn/ui
+- **Blog**: MDX with remark-gfm
 
-### Installation
+---
+
+## 📦 Setup Local
+
+### 1. Clone e Install
 
 ```bash
-# 1. Clone o repositório
-git clone https://github.com/nicoolasmr/mesa-redonda.git
+git clone <repo-url>
 cd mesa-redonda
-
-# 2. Install dependencies
 npm install
+```
 
-# 3. Setup environment variables
+### 2. Configure Environment Variables
+
+```bash
 cp .env.local.example .env.local
-# Edite .env.local com suas credenciais
+```
 
-# 4. Run Supabase migrations
-supabase db push
+Edite `.env.local` com suas credenciais:
+- Supabase (URL, Anon Key, Service Role Key)
+- Stripe (Secret Key, Webhook Secret, Price IDs)
+- OpenAI API Key
+- App URL
 
-# 5. Seed database
-supabase db seed
+### 3. Setup Supabase
 
-# 6. Start dev server
+```bash
+# Rodar migrations
+npx supabase db push
+
+# Rodar seeds (opcional)
+npx supabase db seed
+```
+
+### 4. Setup Stripe (Importante!)
+
+#### a) Criar Products no Stripe Dashboard
+1. Acesse [Stripe Dashboard](https://dashboard.stripe.com/test/products)
+2. Crie 3 produtos:
+   - **Starter**: R$ 49/mês (recorrente)
+   - **Pro**: R$ 99/mês (recorrente)
+   - **Team**: R$ 299/mês (recorrente)
+
+#### b) Copiar Price IDs
+Após criar, copie os Price IDs e atualize `.env.local`:
+```bash
+NEXT_PUBLIC_STRIPE_PRICE_STARTER=price_xxxxxxxxxxxxx
+NEXT_PUBLIC_STRIPE_PRICE_PRO=price_xxxxxxxxxxxxx
+NEXT_PUBLIC_STRIPE_PRICE_TEAM=price_xxxxxxxxxxxxx
+```
+
+#### c) Testar Webhook Localmente
+```bash
+# Terminal 1: Rodar app
+npm run dev
+
+# Terminal 2: Stripe CLI
+stripe listen --forward-to localhost:3000/api/webhooks/stripe
+```
+
+### 5. Rodar Aplicação
+
+```bash
 npm run dev
 ```
 
-Acesse: `http://localhost:3000`
+Acesse: http://localhost:3000
 
 ---
 
-## 📦 Tech Stack
+## 🧪 Testes
 
-- **Frontend**: Next.js 14 (App Router), React, TailwindCSS, shadcn/ui
-- **Backend**: Next.js Server Actions, Supabase (PostgreSQL + Auth + RLS)
-- **AI**: OpenAI GPT-4 (deterministic-first prompts)
-- **Payments**: Stripe (subscriptions + webhooks)
-- **Deploy**: Vercel
+### Fluxo de Teste Completo
+
+1. **Signup**: Criar conta em `/login`
+2. **JobPicker**: Clicar em objetivo → Biblioteca filtrada ✅
+3. **Blog**: Acessar `/blog` → Artigo → Verificar MDX rendering ✅
+4. **Upgrade**: Ir para `/upgrade` → Testar checkout
+5. **Webhook**: Verificar atualização de plano no Supabase
+
+### Cartões de Teste Stripe
+- **Success**: `4242 4242 4242 4242`
+- **Decline**: `4000 0000 0000 0002`
 
 ---
 
-## 🗂️ Project Structure
+## 🚀 Deploy para Vercel
+
+### 1. Push para GitHub
+
+```bash
+git add .
+git commit -m "feat: v1.4 - Blog MDX + Stripe Integration"
+git push origin main
+```
+
+### 2. Conectar Vercel
+
+1. Importe projeto no Vercel
+2. Configure Environment Variables:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `SUPABASE_SERVICE_ROLE_KEY`
+   - `STRIPE_SECRET_KEY` (Production!)
+   - `STRIPE_WEBHOOK_SECRET`
+   - `NEXT_PUBLIC_STRIPE_PRICE_*` (Production Price IDs)
+   - `OPENAI_API_KEY`
+   - `NEXT_PUBLIC_APP_URL` (https://seu-dominio.com)
+
+### 3. Configurar Webhook no Stripe
+
+1. Stripe Dashboard → Webhooks
+2. Add endpoint: `https://seu-dominio.com/api/webhooks/stripe`
+3. Eventos:
+   - `checkout.session.completed`
+   - `customer.subscription.updated`
+   - `customer.subscription.deleted`
+4. Copiar Signing Secret → `STRIPE_WEBHOOK_SECRET` no Vercel
+
+### 4. Deploy!
+
+Vercel fará deploy automático. Aguarde build finalizar.
+
+---
+
+## 📁 Estrutura do Projeto
 
 ```
 mesa-redonda/
 ├── src/
-│   ├── app/                    # Next.js App Router
-│   │   ├── app/               # Authenticated app
-│   │   │   ├── library/       # Template library (NEW v1.3)
-│   │   │   ├── tables/        # Chat interface
-│   │   │   └── workspaces/    # Workspace management
-│   │   ├── api/               # API routes
-│   │   ├── blog/              # MDX blog
-│   │   └── upgrade/           # Paywall
-│   ├── actions/               # Server Actions
-│   │   ├── library.ts         # Library API (NEW v1.3)
-│   │   ├── tables.ts          # Table CRUD
-│   │   └── chat.ts            # LLM integration
-│   ├── components/            # React components
-│   │   ├── job-picker.tsx     # JTBD picker (NEW v1.3)
-│   │   ├── template-card.tsx  # Template cards (NEW v1.3)
-│   │   └── upgrade-modal.tsx  # Gating modal (NEW v1.3)
-│   └── lib/                   # Utilities
-│       ├── llm.ts             # OpenAI wrapper
-│       ├── entitlements.ts    # Plan limits
-│       └── supabase/          # Supabase clients
+│   ├── actions/          # Server actions (stripe, library)
+│   ├── app/              # App Router pages
+│   │   ├── app/          # Authenticated app routes
+│   │   ├── blog/         # Blog with MDX
+│   │   ├── api/          # API routes (webhooks)
+│   │   └── upgrade/      # Pricing page
+│   ├── components/       # React components
+│   │   ├── ui/           # shadcn/ui components
+│   │   ├── mdx-components.tsx
+│   │   ├── reading-progress-bar.tsx
+│   │   ├── table-of-contents.tsx
+│   │   └── ...
+│   └── lib/              # Utilities (supabase, stripe, blog)
+├── content/
+│   └── blog/             # MDX blog posts
 ├── supabase/
-│   ├── migrations/            # SQL migrations
-│   │   ├── 20240101000000_init_schema.sql
-│   │   ├── 20260121000000_guest_system.sql
-│   │   └── 20260121_library_system.sql  # NEW v1.3
-│   └── seeds.sql              # Database seeds (30 templates)
-└── content/
-    └── blog/                  # MDX articles (12+)
+│   ├── migrations/       # Database migrations
+│   └── seeds.sql         # Seed data
+└── public/               # Static assets
 ```
 
 ---
 
-## 🎨 Database Schema (v1.3)
+## 🔐 Security
 
-### Core Tables
-- `workspaces`: Multi-tenant workspaces
-- `workspace_members`: RBAC (owner/admin/member)
-- `tables`: Mesas (conversations)
-- `messages`: Chat messages
-- `artifacts`: Generated outputs (plan, checklist, etc.)
-
-### Library System (NEW v1.3)
-- `table_categories`: 9 business areas (Growth, Sales, Product, etc.)
-- `table_jobs`: 6 JTBD (Grow Revenue, Build Product, etc.)
-- `table_templates`: 30 curated templates
-- `template_tags`: Search tags
-- `user_intents`: User preferences per workspace
-
-### Guest System (v1.2)
-- `guest_credits`: 5 free credits for demos
-- `guest_artifacts`: Public shareable artifacts
+- ✅ Row Level Security (RLS) habilitado no Supabase
+- ✅ Server Actions para operações sensíveis
+- ✅ Webhook signature verification
+- ✅ Environment variables nunca commitadas
+- ✅ Service Role Key apenas em server-side
 
 ---
 
-## 🔐 Environment Variables
+## 📚 Documentação Adicional
 
+- [Product Vision](/.gemini/antigravity/brain/.../01_product_vision.md)
+- [Technical Architecture](/.gemini/antigravity/brain/.../02_technical_architecture.md)
+- [Improvements Plan v1.4](/.gemini/antigravity/brain/.../09_improvements_plan.md)
+- [Blog Improvements](/.gemini/antigravity/brain/.../10_blog_improvements.md)
+- [Walkthrough v1.4](/.gemini/antigravity/brain/.../walkthrough.md)
+
+---
+
+## 🐛 Troubleshooting
+
+### Build Errors
 ```bash
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
-
-# OpenAI (opcional para demo)
-OPENAI_API_KEY=your_openai_key
-
-# Stripe (opcional)
-STRIPE_SECRET_KEY=your_stripe_key
-STRIPE_WEBHOOK_SECRET=your_webhook_secret
-
-# App
-NEXT_PUBLIC_APP_URL=http://localhost:3000
+# Limpar cache
+rm -rf .next
+npm run build
 ```
 
----
+### Webhook não funciona
+1. Verificar `STRIPE_WEBHOOK_SECRET` correto
+2. Testar localmente com Stripe CLI
+3. Verificar logs no Vercel
 
-## 📚 Documentation
-
-- [Product Vision](/.gemini/antigravity/brain/30c7a3ad-a4cd-4ebc-8447-164ef261d256/01_product_vision.md)
-- [Technical Architecture](/.gemini/antigravity/brain/30c7a3ad-a4cd-4ebc-8447-164ef261d256/02_technical_architecture.md)
-- [Library Implementation Plan](/.gemini/antigravity/brain/30c7a3ad-a4cd-4ebc-8447-164ef261d256/08_library_implementation_plan.md)
-- [Walkthrough v1.3](/.gemini/antigravity/brain/30c7a3ad-a4cd-4ebc-8447-164ef261d256/walkthrough.md)
-
----
-
-## 🧪 Testing
-
-### Manual Testing Checklist
-
-```bash
-# 1. Database
-supabase db push
-supabase db seed
-
-# 2. Test flows
-- Guest demo (5 credits)
-- Login/Signup (email+password)
-- JTBD picker → recommendations
-- Library browse → filters → template detail
-- Template gating (Free vs Pro)
-- Create mesa → chat → generate artifact
-```
+### Supabase Connection Issues
+1. Verificar URL e keys corretas
+2. Verificar RLS policies
+3. Verificar migrations rodadas
 
 ---
 
-## 🚢 Deployment
+## 📞 Suporte
 
-### Vercel (Recommended)
-
-```bash
-# 1. Connect GitHub repo to Vercel
-# 2. Add environment variables
-# 3. Deploy
-
-vercel --prod
-```
-
-### Supabase Production
-
-```bash
-# 1. Create production project
-# 2. Run migrations
-supabase db push --db-url your_production_url
-
-# 3. Run seeds
-supabase db seed --db-url your_production_url
-```
+Para questões técnicas, consulte a documentação ou abra uma issue.
 
 ---
 
-## 📊 Roadmap
-
-### v1.4 (Next)
-- [ ] Stripe Checkout integration (real payments)
-- [ ] Template prompts with guardrails (legal/finance)
-- [ ] Analytics dashboard (template usage, conversion)
-- [ ] Mobile app (React Native)
-
-### v1.5 (Future)
-- [ ] Templates verificados (audited by experts)
-- [ ] Community templates (user-generated)
-- [ ] Integrations (Notion, Slack, Google Docs)
-- [ ] White-label for enterprises
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Please:
-1. Fork the repo
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
----
-
-## 📄 License
-
-MIT License - see [LICENSE](LICENSE) for details
-
----
-
-## 🙏 Acknowledgments
-
-- Built with [Next.js](https://nextjs.org/)
-- Powered by [Supabase](https://supabase.com/)
-- UI by [shadcn/ui](https://ui.shadcn.com/)
-- AI by [OpenAI](https://openai.com/)
-
----
-
-## 📧 Contact
-
-- Website: [mesaredonda.app](https://mesaredonda.app)
-- Email: contato@mesaredonda.app
-- Twitter: [@mesaredondaapp](https://twitter.com/mesaredondaapp)
-
----
-
-**Made with ❤️ by [Nicolas Moreira](https://github.com/nicoolasmr)**
+**Desenvolvido com ❤️ pela equipe Mesa Redonda**  
+**Versão**: 1.4.0  
+**Última atualização**: Janeiro 2026

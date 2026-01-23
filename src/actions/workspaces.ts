@@ -3,10 +3,20 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { z } from "zod";
+import { logger } from "@/lib/logger";
+
+const CreateWorkspaceSchema = z.object({
+    name: z.string().min(1).max(255),
+});
 
 export async function createWorkspace(formData: FormData) {
-    const supabase = await createClient();
     const name = formData.get("name") as string;
+
+    // Validate Input
+    const validated = CreateWorkspaceSchema.parse({ name });
+
+    const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
@@ -17,13 +27,14 @@ export async function createWorkspace(formData: FormData) {
     const { data: workspace, error: wsError } = await supabase
         .from("workspaces")
         .insert({
-            name,
+            name: validated.name,
             owner_id: user.id
         })
         .select()
         .single();
 
     if (wsError) {
+        logger.error("Failed to create workspace", wsError, { userId: user.id });
         throw new Error(wsError.message);
     }
 

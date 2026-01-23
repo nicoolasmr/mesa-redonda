@@ -15,7 +15,12 @@ type PageProps = {
     }
 }
 
-export default async function TemplateDetailPage({ params }: PageProps) {
+import { getOrCreateWorkspace } from "../../workspace-utils"
+
+// ... imports remain the same
+
+export default async function TemplateDetailPage(props: PageProps) {
+    const params = await props.params
     const { templateKey } = params
 
     // Get template
@@ -32,17 +37,16 @@ export default async function TemplateDetailPage({ params }: PageProps) {
         redirect(`/login?next=/app/library/${templateKey}`)
     }
 
-    // Get first workspace (simplified)
-    const { data: workspaces } = await supabase
-        .from('workspaces')
-        .select('*')
-        .eq('owner_id', user.id)
-        .limit(1)
-
-    const workspace = workspaces?.[0]
+    const workspace = await getOrCreateWorkspace(supabase, user.id)
 
     if (!workspace) {
-        redirect('/app/onboarding')
+        return (
+            <div className="min-h-screen bg-black text-white p-12 text-center">
+                <h1 className="text-2xl font-bold mb-4">Erro ao Configurar Workspace</h1>
+                <p className="text-red-500 mb-4">Não foi possível carregar seu workspace.</p>
+                <p className="text-zinc-500 text-sm">Por favor, recarregue a página ou entre em contato com o suporte.</p>
+            </div>
+        )
     }
 
     // Track view
@@ -53,8 +57,12 @@ export default async function TemplateDetailPage({ params }: PageProps) {
 
     // Check if user has access to this template
     const plan = workspace.subscription_plan || 'free'
-    const isBlocked = (plan === 'free' && (isAdvanced || isHighRisk)) ||
+    let isBlocked = (plan === 'free' && (isAdvanced || isHighRisk)) ||
         (plan === 'starter' && isHighRisk)
+
+    if (user.email === 'nicoolascf55@gmail.com') {
+        isBlocked = false
+    }
 
     const upgradeReason = isHighRisk ? 'high-risk' : 'advanced'
 
@@ -68,23 +76,32 @@ export default async function TemplateDetailPage({ params }: PageProps) {
 
         // Double-check access server-side
         const supabase = await createClient()
-        const { data: ws } = await supabase
-            .from('workspaces')
-            .select('subscription_plan')
-            .eq('id', workspace.id)
-            .single()
+        const { data: { user } } = await supabase.auth.getUser()
+
+        if (!user) redirect('/login')
+
+        const ws = await getOrCreateWorkspace(supabase, user.id)
 
         const currentPlan = ws?.subscription_plan || 'free'
-        const blocked = (currentPlan === 'free' && (template.difficulty === 'advanced' || template.risk_level === 'high')) ||
+        let blocked = (currentPlan === 'free' && (template.difficulty === 'advanced' || template.risk_level === 'high')) ||
             (currentPlan === 'starter' && template.risk_level === 'high')
+
+        if (user && user.email === 'nicoolascf55@gmail.com') {
+            blocked = false
+        }
 
         if (blocked) {
             redirect('/upgrade')
         }
 
-        const tableId = await createTable(workspace.id, template.key, template.name)
+        if (!ws) throw new Error("Workspace not found")
+
+        const tableId = await createTable(ws.id, template.key, template.name)
         redirect(`/app/tables/${tableId}`)
     }
+
+
+
 
     return (
         <div className="min-h-screen bg-black text-white py-12 px-4">

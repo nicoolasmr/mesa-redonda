@@ -1,51 +1,88 @@
-import { createClient } from "./supabase/server";
+import { createClient } from "@/lib/supabase/server"
+import { logger } from "@/lib/logger"
+import { z } from "zod"
 
-export const LIMITS = {
-    free: { tables: 3, messages_per_day: 10 },
-    starter: { tables: 10, messages_per_day: 50 },
-    pro: { tables: 9999, messages_per_day: 500 },
-    max: { tables: 9999, messages_per_day: 1000 },
-};
+const WorkspaceIdSchema = z.string().uuid();
 
-export async function checkLimit(userId: string, feature: 'tables' | 'messages') {
-    const supabase = await createClient();
+export type UsageMetric = 'runs' | 'upload_mb' | 'meetings'
 
-    // 1. Get User Plan
-    // Note: We need to get the user's workspace where they are owner.
-    // Assuming 1 owned workspace per user for MVP simplification.
-    const { data: workspace } = await supabase
-        .from('workspaces')
-        .select('id, subscription_plan')
-        .eq('owner_id', userId)
-        .single();
+export async function getWorkspacePlan(workspaceId: string) {
+    const supabase = await createClient()
 
-    if (!workspace) return false; // Should not happen if app logic is correct
+    // 1. Check direct subscription source of truth
+    const { data: sub } = await supabase
+        .from('stripe_subscriptions')
+        .select('status, plan_key, current_period_end')
+        .eq('workspace_id', workspaceId)
+        .single()
 
-    const plan = (workspace.subscription_plan || 'free') as keyof typeof LIMITS;
-    const limit = LIMITS[plan];
+    // 2. Fallback to entitlements override or 'free'
+    if (!sub || sub.status !== 'active') {
+        // Check for specific overrides or manual grants
+        const { data: ent } = await supabase
+            .from('workspace_entitlements')
+            .select('plan_key')
+            .eq('workspace_id', workspaceId)
+            .single()
 
-    // 2. Check Usage
-    if (feature === 'tables') {
-        const { count } = await supabase
-            .from('tables')
-            .select('*', { count: 'exact', head: true })
-            .eq('workspace_id', workspace.id);
-
-        return (count || 0) < limit.tables;
+        return ent?.plan_key || 'free'
     }
 
-    // For messages, we'd need a time-based query. 
-    // Simplified MVP: Allow all messages if plan is not free.
-    if (feature === 'messages') {
-        if (plan === 'free') {
-            // Check messages in last 24h
-            // const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-            // const { count } = await supabase...
-            // MVP: We are not enforcing message limits strictly yet to avoid blocking early users incorrectly.
-            // When we add the 'messages' table constraint, we will uncomment this.
-        }
-        return true;
-    }
+    return sub.plan_key
+}
 
-    return true;
+export async function canPerformAction(workspaceId: string, metric: UsageMetric, amount: number = 1): Promise<boolean> {
+    const supabase = await createClient()
+    const planKey = await getWorkspacePlan(workspaceId)
+
+    // 1. Get Plan Limits
+    const { data: plan } = await supabase
+        .from('plan_catalog')
+        .select('limits')
+        .eq('plan_key', planKey)
+        .single()
+
+    if (!plan) return false // Fail safe
+
+    const limit: number = (plan.limits as any)?.[metric] || 0
+    if (limit === -1) return true // Unlimited
+
+    // 2. Get Current Usage (Month)
+    const monthKey = new Date().toISOString().substring(0, 7) // 2024-01
+    const { data: usage } = await supabase
+        .from('workspace_usage_monthly')
+        .select('counters')
+        .eq('workspace_id', workspaceId)
+        .eq('month_key', monthKey)
+        .single()
+
+    const current = (usage?.counters as any)?.[metric] || 0
+
+    return (current + amount) <= limit
+}
+
+export async function trackUsage(workspaceId: string, metric: UsageMetric, amount: number = 1, refId?: string) {
+    // Basic validation
+    WorkspaceIdSchema.parse(workspaceId);
+
+    const supabase = await createClient()
+
+    // 1. Log Event (Audit)
+    await supabase.from('usage_events').insert({
+        workspace_id: workspaceId,
+        metric,
+        amount,
+        ref_id: refId
+    })
+
+    // 2. Increment Counter (Atomic RPC)
+    const { error } = await supabase.rpc('increment_workspace_usage', {
+        target_workspace_id: workspaceId,
+        target_metric: metric,
+        increment_amount: amount
+    })
+
+    if (error) {
+        logger.error("Error tracking usage via RPC", error, { workspaceId, metric, amount });
+    }
 }

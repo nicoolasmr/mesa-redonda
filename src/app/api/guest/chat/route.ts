@@ -8,7 +8,9 @@ import { getServiceRoleClient, GUEST_COOKIE_NAME } from "@/lib/guest"
  */
 export async function POST(req: NextRequest) {
     try {
-        const guestId = req.cookies.get(GUEST_COOKIE_NAME)?.value
+        const cookieGuestId = req.cookies.get(GUEST_COOKIE_NAME)?.value
+        const headerGuestId = req.headers.get("x-guest-id")
+        const guestId = cookieGuestId || headerGuestId
 
         if (!guestId) {
             return NextResponse.json(
